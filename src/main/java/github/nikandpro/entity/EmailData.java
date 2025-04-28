@@ -1,18 +1,23 @@
 package github.nikandpro.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.ToString;
 
+@Data
 @Entity
 @Table(name = "email_data")
 public class EmailData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
     private User user;
 
-    @Column(nullable = false, length = 200, unique = true)
+    @Column(name = "email", nullable = false, length = 200, unique = true)
     private String email;
 }
