@@ -3,10 +3,13 @@ package github.nikandpro.controller;
 import github.nikandpro.dto.*;
 import github.nikandpro.dto.request.UpdateRequest;
 import github.nikandpro.dto.request.UserCreateRequest;
+import github.nikandpro.dto.request.UserSearchRequest;
+import github.nikandpro.dto.response.UserResponseDto;
 import github.nikandpro.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +35,7 @@ public class UserController {
     @PostMapping("/{userId}/emails")
     public ResponseEntity<EmailDataDto> addEmail(
             @PathVariable Long userId,
-            @RequestBody @NotBlank UpdateRequest email) {
+            @RequestBody UpdateRequest email) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.addUserEmail(userId, email.getEmail()));
@@ -50,7 +53,7 @@ public class UserController {
     @PostMapping("/{userId}/phones")
     public ResponseEntity<PhoneDataDto> addPhone(
             @PathVariable Long userId,
-            @RequestBody @NotBlank UpdateRequest phone) {
+            @RequestBody UpdateRequest phone) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.addUserPhone(userId, phone.getPhone()));
@@ -63,5 +66,32 @@ public class UserController {
 
         userService.removeUserPhone(userId, phoneId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search/by-dob")
+    public Page<UserResponseDto> findByDateOfBirth(
+            @RequestBody UserSearchRequest request) {
+        return userService.findByDateOfBirthAfter(request);
+    }
+
+
+    @GetMapping("/search/by-phone")
+    public UserResponseDto findByPhone(
+            @RequestBody UserSearchRequest request) {
+        return userService.findByPhone(request);
+    }
+
+
+    @GetMapping("/search/by-name")
+    public Page<UserResponseDto> findByNameStartingWith(
+            @RequestBody UserSearchRequest request) {
+        return userService.findByNameStartingWith(request);
+    }
+
+
+    @GetMapping("/search/by-email")
+    public UserResponseDto findByEmail(
+            @RequestBody UserSearchRequest request) {
+        return userService.findByEmail(request);
     }
 }

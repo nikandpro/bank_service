@@ -1,19 +1,24 @@
-package github.nikandpro.dto;
+package github.nikandpro.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class UserDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserResponseDto {
     private Long id;
     private String name;
     private LocalDate dateOfBirth;
-    private BigDecimal balance;
     private List<String> emails;
     private List<String> phones;
+    private BigDecimal accountBalance;
+
 
     public Long getId() {
         return id;
@@ -39,14 +44,6 @@ public class UserDto {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
     public List<String> getEmails() {
         return emails;
     }
@@ -61,5 +58,13 @@ public class UserDto {
 
     public void setPhones(List<String> phones) {
         this.phones = phones;
+    }
+
+    public BigDecimal getAccountBalance() {
+        return accountBalance;
+    }
+
+    public void setAccountBalance(BigDecimal accountBalance) {
+        this.accountBalance = accountBalance;
     }
 }

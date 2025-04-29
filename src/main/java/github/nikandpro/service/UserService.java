@@ -4,6 +4,8 @@ import github.nikandpro.dto.EmailDataDto;
 import github.nikandpro.dto.PhoneDataDto;
 import github.nikandpro.dto.request.UserCreateRequest;
 import github.nikandpro.dto.UserDto;
+import github.nikandpro.dto.request.UserSearchRequest;
+import github.nikandpro.dto.response.UserResponseDto;
 import github.nikandpro.entity.EmailData;
 import github.nikandpro.entity.PhoneData;
 import github.nikandpro.entity.User;
@@ -18,12 +20,18 @@ import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final int NUMBER_SIZE = 8;
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final EmailMapper emailMapper;
@@ -39,6 +47,10 @@ public class UserService {
     }
 
     public UserDto getUserById(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("User with id " + id + " not found");
+        }
+
         return userRepository.findById(id)
                 .map(userMapper::toUserDto)
                 .orElseThrow();
@@ -110,4 +122,39 @@ public class UserService {
 
         phoneDataRepository.delete(phoneData);
     }
+
+    public Page<UserResponseDto> findByDateOfBirthAfter(UserSearchRequest request) {
+        if (request.getDateOfBirth() == null) {
+            throw new BadRequestException("Date of birth is empty");
+        }
+        if (request.getDateOfBirth().isAfter(LocalDate.now())) {
+            throw new BadRequestException("Date of birth is after current date");
+        }
+
+        return userRepository.findByDateOfBirthAfter(request.getDateOfBirth(), PageRequest.of(request.getPage(), request.getSize()))
+                .map(userMapper::toResponseDto);
+    }
+
+    public UserResponseDto findByPhone(UserSearchRequest request) {
+        if (request.getPhone().isEmpty() || request.getPhone().length()<NUMBER_SIZE) {
+            throw new BadRequestException("Phone number is empty");
+        }
+
+        return userMapper.toResponseDto(userRepository.findByPhone(request.getPhone()));
+    }
+
+    public UserResponseDto findByEmail(UserSearchRequest request) {
+        if (request.getEmail().isEmpty()) {
+            throw new BadRequestException("Email is empty");
+        }
+
+        return userMapper.toResponseDto(userRepository.findByEmail(request.getEmail()));
+    }
+
+    public Page<UserResponseDto> findByNameStartingWith(UserSearchRequest request) {
+        return userRepository.findByNameStartingWith(request.getName(), PageRequest.of(request.getPage(), request.getSize()))
+                .map(userMapper::toResponseDto);
+    }
+
+
 }
