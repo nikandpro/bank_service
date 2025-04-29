@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PhoneDataRepository extends JpaRepository<PhoneData, Long> {
     boolean existsByPhoneAndUserIdNot(String phone, Long userId);
+
+    boolean existsByPhone(String phone);
 }

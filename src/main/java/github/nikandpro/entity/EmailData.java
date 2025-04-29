@@ -2,6 +2,8 @@ package github.nikandpro.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Data
@@ -20,4 +22,20 @@ public class EmailData {
 
     @Column(name = "email", nullable = false, length = 200, unique = true)
     private String email;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

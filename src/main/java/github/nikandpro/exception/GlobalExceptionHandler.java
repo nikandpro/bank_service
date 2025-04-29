@@ -22,40 +22,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-//    @ExceptionHandler(RequestRejectedException.class)
-//    public ResponseEntity<ErrorResponse> handleBadRequest(RequestRejectedException ex) {
-//        ErrorResponse response = new ErrorResponse(
-//                HttpStatus.BAD_REQUEST.value(),
-//                ex.getMessage(),
-//                System.currentTimeMillis()
-//        );
-//        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
-//        ErrorResponse response = new ErrorResponse(
-//                HttpStatus.FORBIDDEN.value(),
-//                ex.getMessage(),
-//                System.currentTimeMillis()
-//        );
-//        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-//    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        List<String> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.toList());
-
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Validation failed",
-                System.currentTimeMillis(),
-                errors
+                ex.getMessage(),
+                System.currentTimeMillis()
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
 }

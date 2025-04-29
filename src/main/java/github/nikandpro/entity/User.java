@@ -1,7 +1,7 @@
 package github.nikandpro.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
