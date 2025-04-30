@@ -7,7 +7,6 @@ import github.nikandpro.exception.BadRequestException;
 import github.nikandpro.exception.ConflictException;
 import github.nikandpro.mapper.EmailMapper;
 import github.nikandpro.repository.EmailDataRepository;
-import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,5 +49,9 @@ public class EmailDataService {
         if (emailData.getUser().getEmails().size() <= 1) {
             throw new BadRequestException("Cannot delete the last email");
         }
+    }
+
+    public boolean existsByEmail(String email) {
+        return emailDataRepository.existsByEmail(email);
     }
 }

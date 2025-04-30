@@ -23,7 +23,7 @@ public class Account {
     private User user;
 
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
-    private BigDecimal balance;
+    private BigDecimal balance = BigDecimal.valueOf(100);
 
     @Column(name = "initial_deposit", nullable = false, precision = 19, scale = 2)
     private BigDecimal initialDeposit;

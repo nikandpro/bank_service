@@ -1,13 +1,13 @@
 package github.nikandpro.controller;
 
-import github.nikandpro.dto.*;
+import github.nikandpro.dto.EmailDataDto;
+import github.nikandpro.dto.PhoneDataDto;
+import github.nikandpro.dto.UserDto;
 import github.nikandpro.dto.request.UpdateRequest;
-import github.nikandpro.dto.request.UserCreateRequest;
 import github.nikandpro.dto.request.UserSearchRequest;
 import github.nikandpro.dto.response.UserResponseDto;
 import github.nikandpro.service.UserService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/create")
-    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserCreateRequest request) {
-        UserDto createdUser = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    }
+//    @PostMapping("/create")
+//    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserCreateRequest request) {
+//        UserDto createdUser = userService.createUser(request);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
@@ -53,7 +53,7 @@ public class UserController {
     @PostMapping("/{userId}/phones")
     public ResponseEntity<PhoneDataDto> addPhone(
             @PathVariable Long userId,
-            @RequestBody UpdateRequest phone) {
+            @RequestBody @Valid UpdateRequest phone) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.addUserPhone(userId, phone.getPhone()));
@@ -70,21 +70,21 @@ public class UserController {
 
     @GetMapping("/search/by-dob")
     public Page<UserResponseDto> findByDateOfBirth(
-            @RequestBody UserSearchRequest request) {
+            @RequestBody @Valid UserSearchRequest request) {
         return userService.findByDateOfBirthAfter(request);
     }
 
 
     @GetMapping("/search/by-phone")
     public UserResponseDto findByPhone(
-            @RequestBody UserSearchRequest request) {
+            @RequestBody @Valid UserSearchRequest request) {
         return userService.findByPhone(request);
     }
 
 
     @GetMapping("/search/by-name")
     public Page<UserResponseDto> findByNameStartingWith(
-            @RequestBody UserSearchRequest request) {
+            @RequestBody @Valid UserSearchRequest request) {
         return userService.findByNameStartingWith(request);
     }
 

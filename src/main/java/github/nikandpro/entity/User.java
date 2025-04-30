@@ -20,10 +20,10 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 500)
+    @Column(name = "name", length = 500, nullable = false)
     private String name;
 
-    @Column(name = "date_of_birth", nullable = false)
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
     @Column(name = "password", nullable = false, length = 500)
@@ -34,6 +34,7 @@ public class User {
     private Account account;
 
     @OneToMany(mappedBy = "user")
+    @NotNull
     private Set<EmailData> emails = new HashSet<>();
 
     @OneToMany(mappedBy = "user")

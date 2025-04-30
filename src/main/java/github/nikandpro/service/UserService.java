@@ -3,34 +3,59 @@ package github.nikandpro.service;
 import github.nikandpro.dto.EmailDataDto;
 import github.nikandpro.dto.PhoneDataDto;
 import github.nikandpro.dto.UserDto;
-import github.nikandpro.dto.request.UserCreateRequest;
+import github.nikandpro.dto.request.RegistrationUserDto;
 import github.nikandpro.dto.request.UserSearchRequest;
 import github.nikandpro.dto.response.UserResponseDto;
+import github.nikandpro.entity.Account;
 import github.nikandpro.entity.User;
 import github.nikandpro.exception.BadRequestException;
 import github.nikandpro.mapper.UserMapper;
 import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final EmailDataService emailDataService;
     private final PhoneDataService phoneDataService;
+    private final PasswordEncoder passwordEncoder;
+    private final AccountService accountService;
 
-    public UserDto createUser(UserCreateRequest request) {
-        User savedUser = userRepository.save(userMapper.toUser(request));
-        return userMapper.toUserDto(savedUser);
+
+    public void createUser(RegistrationUserDto registrationDto) {
+        User user = new User();
+        user = userMapper.registrationDtoToUser(registrationDto, user);
+        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
+
+        User savedUser = userRepository.save(user);
+        addUserEmail(savedUser.getId(), registrationDto.getEmails());
+        startBalance(savedUser);
+
+        userMapper.toUserDto(savedUser);
+    }
+
+    public void startBalance(User user) {
+        Account account = new Account();
+        account.setInitialDeposit(account.getBalance());
+
+        account.setUser(user);
+        accountService.createAccount(account);
     }
 
     public UserDto getUserById(Long id) {
@@ -94,8 +119,23 @@ public class UserService {
         if (dateOfBirth == null) {
             throw new BadRequestException("Date of birth is empty");
         }
-        if (dateOfBirth.isAfter(LocalDate.now())) {
-            throw new BadRequestException("Date of birth is after current date");
-        }
+    }
+
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
+
+        String userEmail = user.getEmails().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("User has no emails"))
+                .getEmail();
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(userEmail)
+                .password(user.getPassword())
+                .authorities(Collections.emptyList())
+                .build();
     }
 }

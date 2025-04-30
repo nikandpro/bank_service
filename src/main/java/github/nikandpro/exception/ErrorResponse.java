@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -12,12 +13,12 @@ import java.util.List;
 public class ErrorResponse {
     private int status;
     private String message;
-    private long timestamp;
+    private Date timestamp;
     private List<String> errors;
 
-    public ErrorResponse(int status, String message, long timestamp) {
+    public ErrorResponse(int status, String message) {
         this.status = status;
         this.message = message;
-        this.timestamp = timestamp;
+        this.timestamp = new Date();
     }
 }
