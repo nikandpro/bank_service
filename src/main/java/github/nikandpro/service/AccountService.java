@@ -18,11 +18,17 @@ public class AccountService {
 
     @Transactional
     public void createAccountForUser(User user) {
+        validateUser(user);
+
         Account account = new Account();
         account.setUser(user);
         account.setInitialDeposit(account.getBalance());
-
-        user.setAccount(account);
         accountRepository.save(account);
+    }
+
+    private void validateUser(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User is null");
+        }
     }
 }

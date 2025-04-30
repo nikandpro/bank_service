@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TransferService {
     private final AccountRepository accountRepository;
-    private final UserRepository userRepository;
 
     @Transactional(isolation = Isolation.SERIALIZABLE, timeout = 30)
     public void transferMoney(Long senderUserId, TransferRequest request) {

@@ -53,7 +53,7 @@ public class JwtTokenUtils {
         return claimsResolver.apply(claims);
     }
 
-    private Claims getAllClaimsFromToken(String token) {
+    public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
