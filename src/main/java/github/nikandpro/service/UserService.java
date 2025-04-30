@@ -6,15 +6,12 @@ import github.nikandpro.dto.UserDto;
 import github.nikandpro.dto.request.RegistrationUserDto;
 import github.nikandpro.dto.request.UserSearchRequest;
 import github.nikandpro.dto.response.UserResponseDto;
-import github.nikandpro.entity.Account;
 import github.nikandpro.entity.User;
 import github.nikandpro.exception.BadRequestException;
 import github.nikandpro.mapper.UserMapper;
 import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,11 +19,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collections;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -37,7 +34,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AccountService accountService;
 
-
+    @Transactional
     public void createUser(RegistrationUserDto registrationDto) {
         User user = new User();
         user = userMapper.registrationDtoToUser(registrationDto, user);
@@ -51,12 +48,15 @@ public class UserService implements UserDetailsService {
     }
 
 
+    @Transactional(readOnly = true)
     public UserDto getUserById(Long id) {
         return userRepository.findById(id)
                 .map(userMapper::toUserDto)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
 
+
+    @Transactional
     public EmailDataDto addUserEmail(Long userId, String email) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -64,10 +64,12 @@ public class UserService implements UserDetailsService {
         return emailDataService.addEmailToUser(user, email);
     }
 
+    @Transactional
     public void removeUserEmail(Long userId, Long emailId) {
         emailDataService.removeEmailFromUser(userId, emailId);
     }
 
+    @Transactional
     public PhoneDataDto addUserPhone(Long userId, String phone) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -76,10 +78,12 @@ public class UserService implements UserDetailsService {
         return phoneDataService.addPhoneToUser(user, phone);
     }
 
+    @Transactional
     public void removeUserPhone(Long userId, Long phoneId) {
         phoneDataService.removePhoneFromUser(userId, phoneId);
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponseDto> findByDateOfBirthAfter(UserSearchRequest request) {
         validateDateOfBirth(request.getDateOfBirth());
 
@@ -89,18 +93,29 @@ public class UserService implements UserDetailsService {
         ).map(userMapper::toResponseDto);
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto findByPhone(UserSearchRequest request) {
         return userMapper.toResponseDto(
                 userRepository.findByPhone(request.getPhone())
         );
     }
 
+
+    @Transactional(readOnly = true)
     public UserResponseDto findByEmail(UserSearchRequest request) {
         return userMapper.toResponseDto(
                 userRepository.findByEmail(request.getEmail())
         );
     }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto findByEmail(String email) {
+        return userMapper.toResponseDto(
+                userRepository.findByEmail(email)
+        );
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserResponseDto> findByNameStartingWith(UserSearchRequest request) {
         return userRepository.findByNameStartingWith(
                 request.getName(),

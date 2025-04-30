@@ -7,13 +7,14 @@ import github.nikandpro.exception.BadRequestException;
 import github.nikandpro.exception.ConflictException;
 import github.nikandpro.mapper.PhoneMapper;
 import github.nikandpro.repository.PhoneDataRepository;
-import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PhoneDataService {
     private final PhoneDataRepository phoneDataRepository;
     private final PhoneMapper phoneMapper;

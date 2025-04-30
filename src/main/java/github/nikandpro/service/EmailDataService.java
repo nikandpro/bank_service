@@ -10,12 +10,15 @@ import github.nikandpro.repository.EmailDataRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EmailDataService {
     private final EmailDataRepository emailDataRepository;
     private final EmailMapper emailMapper;
+
 
     public EmailDataDto addEmailToUser(User user, String email) {
         if (emailDataRepository.existsByEmail(email)) {
@@ -28,6 +31,7 @@ public class EmailDataService {
 
         return emailMapper.toDto(emailDataRepository.save(emailData));
     }
+
 
     public void removeEmailFromUser(Long userId, Long emailId) {
         EmailData emailData = emailDataRepository.findById(emailId)
@@ -49,9 +53,5 @@ public class EmailDataService {
         if (emailData.getUser().getEmails().size() <= 1) {
             throw new BadRequestException("Cannot delete the last email");
         }
-    }
-
-    public boolean existsByEmail(String email) {
-        return emailDataRepository.existsByEmail(email);
     }
 }
