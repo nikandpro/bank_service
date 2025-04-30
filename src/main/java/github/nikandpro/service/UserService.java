@@ -45,18 +45,11 @@ public class UserService implements UserDetailsService {
 
         User savedUser = userRepository.save(user);
         addUserEmail(savedUser.getId(), registrationDto.getEmails());
-        startBalance(savedUser);
+        accountService.createAccountForUser(savedUser);
 
         userMapper.toUserDto(savedUser);
     }
 
-    public void startBalance(User user) {
-        Account account = new Account();
-        account.setInitialDeposit(account.getBalance());
-
-        account.setUser(user);
-        accountService.createAccount(account);
-    }
 
     public UserDto getUserById(Long id) {
         return userRepository.findById(id)
