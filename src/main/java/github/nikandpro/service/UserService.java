@@ -2,20 +2,13 @@ package github.nikandpro.service;
 
 import github.nikandpro.dto.EmailDataDto;
 import github.nikandpro.dto.PhoneDataDto;
-import github.nikandpro.dto.request.UserCreateRequest;
 import github.nikandpro.dto.UserDto;
+import github.nikandpro.dto.request.UserCreateRequest;
 import github.nikandpro.dto.request.UserSearchRequest;
 import github.nikandpro.dto.response.UserResponseDto;
-import github.nikandpro.entity.EmailData;
-import github.nikandpro.entity.PhoneData;
 import github.nikandpro.entity.User;
 import github.nikandpro.exception.BadRequestException;
-import github.nikandpro.exception.ConflictException;
-import github.nikandpro.mapper.EmailMapper;
-import github.nikandpro.mapper.PhoneMapper;
 import github.nikandpro.mapper.UserMapper;
-import github.nikandpro.repository.EmailDataRepository;
-import github.nikandpro.repository.PhoneDataRepository;
 import github.nikandpro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,131 +23,79 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final int NUMBER_SIZE = 8;
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final EmailMapper emailMapper;
-    private final EmailDataRepository emailDataRepository;
-    private final PhoneDataRepository phoneDataRepository;
-    private final PhoneMapper phoneMapper;
-
+    private final EmailDataService emailDataService;
+    private final PhoneDataService phoneDataService;
 
     public UserDto createUser(UserCreateRequest request) {
         User savedUser = userRepository.save(userMapper.toUser(request));
-
         return userMapper.toUserDto(savedUser);
     }
 
     public UserDto getUserById(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new EntityNotFoundException("User with id " + id + " not found");
-        }
-
         return userRepository.findById(id)
                 .map(userMapper::toUserDto)
-                .orElseThrow();
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
     }
-
 
     public EmailDataDto addUserEmail(Long userId, String email) {
-        log.info(email);
-        if (emailDataRepository.existsByEmail(email)) {
-            throw new ConflictException("Email already in use");
-        }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        EmailData emailData = new EmailData();
-        emailData.setEmail(email);
-        emailData.setUser(user);
-        log.info(emailData.toString());
-
-        return emailMapper.toDto(emailDataRepository.save(emailData));
+        return emailDataService.addEmailToUser(user, email);
     }
-
 
     public void removeUserEmail(Long userId, Long emailId) {
-        EmailData emailData = emailDataRepository.findById(emailId)
-                .orElseThrow(() -> new EntityNotFoundException("Email not found"));
-
-        if (!emailData.getUser().getId().equals(userId)) {
-            throw new BadRequestException("Email does not belong to user");
-        }
-
-        if (emailData.getUser().getEmails().size() <= 1) {
-            throw new BadRequestException("Cannot delete the last email");
-        }
-
-        emailDataRepository.delete(emailData);
+        emailDataService.removeEmailFromUser(userId, emailId);
     }
 
-
     public PhoneDataDto addUserPhone(Long userId, String phone) {
-        if (phoneDataRepository.existsByPhone(phone)) {
-            throw new ConflictException("Phone already in use");
-        }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        PhoneData phoneData = new PhoneData();
-        phoneData.setPhone(phone);
-        phoneData.setUser(user);
 
-
-        return phoneMapper.toDto(phoneDataRepository.save(phoneData));
+        return phoneDataService.addPhoneToUser(user, phone);
     }
 
-
     public void removeUserPhone(Long userId, Long phoneId) {
-        PhoneData phoneData = phoneDataRepository.findById(phoneId)
-                .orElseThrow(() -> new EntityNotFoundException("Phone not found"));
-
-        if (!phoneData.getUser().getId().equals(userId)) {
-            throw new BadRequestException("Phone does not belong to user");
-        }
-
-        if (phoneData.getUser().getPhones().size() <= 1) {
-            throw new BadRequestException("Cannot delete the last phone");
-        }
-
-        phoneDataRepository.delete(phoneData);
+        phoneDataService.removePhoneFromUser(userId, phoneId);
     }
 
     public Page<UserResponseDto> findByDateOfBirthAfter(UserSearchRequest request) {
-        if (request.getDateOfBirth() == null) {
-            throw new BadRequestException("Date of birth is empty");
-        }
-        if (request.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new BadRequestException("Date of birth is after current date");
-        }
+        validateDateOfBirth(request.getDateOfBirth());
 
-        return userRepository.findByDateOfBirthAfter(request.getDateOfBirth(), PageRequest.of(request.getPage(), request.getSize()))
-                .map(userMapper::toResponseDto);
+        return userRepository.findByDateOfBirthAfter(
+                request.getDateOfBirth(),
+                PageRequest.of(request.getPage(), request.getSize())
+        ).map(userMapper::toResponseDto);
     }
 
     public UserResponseDto findByPhone(UserSearchRequest request) {
-        if (request.getPhone().isEmpty() || request.getPhone().length()<NUMBER_SIZE) {
-            throw new BadRequestException("Phone number is empty");
-        }
-
-        return userMapper.toResponseDto(userRepository.findByPhone(request.getPhone()));
+        return userMapper.toResponseDto(
+                userRepository.findByPhone(request.getPhone())
+        );
     }
 
     public UserResponseDto findByEmail(UserSearchRequest request) {
-        if (request.getEmail().isEmpty()) {
-            throw new BadRequestException("Email is empty");
-        }
-
-        return userMapper.toResponseDto(userRepository.findByEmail(request.getEmail()));
+        return userMapper.toResponseDto(
+                userRepository.findByEmail(request.getEmail())
+        );
     }
 
     public Page<UserResponseDto> findByNameStartingWith(UserSearchRequest request) {
-        return userRepository.findByNameStartingWith(request.getName(), PageRequest.of(request.getPage(), request.getSize()))
-                .map(userMapper::toResponseDto);
+        return userRepository.findByNameStartingWith(
+                request.getName(),
+                PageRequest.of(request.getPage(), request.getSize())
+        ).map(userMapper::toResponseDto);
     }
 
-
+    private void validateDateOfBirth(LocalDate dateOfBirth) {
+        if (dateOfBirth == null) {
+            throw new BadRequestException("Date of birth is empty");
+        }
+        if (dateOfBirth.isAfter(LocalDate.now())) {
+            throw new BadRequestException("Date of birth is after current date");
+        }
+    }
 }
