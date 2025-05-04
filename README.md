@@ -1,21 +1,83 @@
-# Инструкция к запуску проекта
+# Bank Service Application
 
-## 1. Запустите Docker
+## Описание проекта 
 
-## 2. Запустите сервисы через docker-compose
+Банковское приложение, реализованное на Spring Boot, предоставляющее REST API для управления пользовательскими данными и банковскими операциями.
 
-## 3. Установите секрет для JWT
+## Технологии 
 
-В файле настроек (`application.properties` или аналогичном) найдите параметр:
-jwt.secret=
+- Java 11+
+- Spring Boot
+- PostgreSQL
+- Maven
+- JWT для аутентификации 
+- Swagger для документации API 
 
-Вставьте любой секрет длиной не менее 32 символов, например:
+## Требования 
+
+- Java 11 или выше 
+- Maven
+- PostgreSQL
+
+## Установка и запуск / Installation and Running
+
+1. Клонировать репозиторий :
+```bash
+git clone [repository-url]
+```
+
+2. Настроить базу данных :
+- Создать базу данных PostgreSQL (Запустить скрипт в docker-compose)
+- Настроить параметры подключения в `application.properties` / 
+Вставьте любой jwt.secret длиной не менее 32 символов, например: 
+```
 jwt.secret=your-256-bit-secret-key-must-be-at-least-32-chars-long
+```
+3. Запустить приложение (BankAppApplication):
+```
+mvn spring-boot:run
+```
 
-## 4. Запустите приложение
+## Основные функции / Main Features
 
-Запустите основной класс приложения:
-BankAppApplication
+### Пользовательские операции / User Operations
+- Поиск пользователей с фильтрацией и пагинацией
+- Обновление пользовательских данных
+  - Управление email
+  - Управление телефонами
+
+### Банковские операции / Banking Operations
+- Автоматическое начисление процентов (10% каждые 30 секунд) 
+- Перевод денег между пользователями 
+
+### Безопасность / Security
+- JWT аутентификация 
+- Валидация входных данных 
+- Потокобезопасные операции 
+
+## API Документация / API Documentation
+
+Swagger UI доступен по адресу :
+```
+http://localhost:8080/swagger-ui.html
+```
+
+## Тестирование / Testing
+
+Проект включает unit-тесты и интеграционные тесты с использованием TestContainers.
+
+Запуск тестов / Run tests:
+```bash
+mvn test
+```
+
+## Архитектура / Architecture
+
+Приложение построено на трехслойной архитектуре / The application is built on a three-layer architecture:
+- API Layer (Controllers)
+- Service Layer (Business Logic)
+- DAO Layer (Data Access)
+
 
 ## Примеры запросов для endpoint'ов:
 
@@ -39,9 +101,9 @@ BankAppApplication
 }
 ```
 ### Вставить токен
-3 http://localhost:8080/api/users/28
+3 http://localhost:8080/api/users/1
 
-4 http://localhost:8080/api/users/28/emails
+4 http://localhost:8080/api/users/1/emails
 
 ```
 {
